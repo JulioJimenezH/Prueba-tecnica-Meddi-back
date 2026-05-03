@@ -99,20 +99,26 @@ namespace Prueba_tecnica_Meddi_back.Meddi.Api.Controllers{
         /// PUT api/tasks/{id}
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<GenericResponse> UpdateTask(string id, CreateTaskDto updateDto)
+        public async Task<GenericResponse> UpdateTask(string id, UpdateTaskDto updateDto) 
         {
             var mResponse = new GenericResponse();
             try
-            {
-                var taskEntity = _mapper.Map<TaskItem>(updateDto);
-                taskEntity.Id = id;
+            {               
+                var existingTask = await _context.TaskItems.Find(t => t.Id == id).FirstOrDefaultAsync();
 
-                var result = await _context.TaskItems.ReplaceOneAsync(t => t.Id == id, taskEntity);
+                if (existingTask == null)
+                    throw new Exception("No se encontró el registro.");
 
-                if (result.MatchedCount == 0) throw new Exception("No se encontró el registro.");
-
+                
+                existingTask.Titulo = updateDto.Titulo;
+                existingTask.Descripcion = updateDto.Descripcion;
+                existingTask.Prioridad = updateDto.Prioridad;
+                existingTask.FechaVencimiento = updateDto.FechaVencimiento;
+                existingTask.Estado = updateDto.Estado; 
+                
+                var result = await _context.TaskItems.ReplaceOneAsync(t => t.Id == id, existingTask);
                 mResponse.Success = true;
-                mResponse.Message = "Registro actualizado";
+                mResponse.Message = "Registro actualizado exitosamente";
             }
             catch (Exception ex)
             {
