@@ -3,11 +3,17 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
+var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL") ?? "http://localhost:3000";
+Env.Load();
 
-builder.Services.Configure<MongoSettings>(
-    builder.Configuration.GetSection(nameof(MongoSettings)));
+builder.Services.Configure<MongoSettings>(options => {
+    options.MongoDB = Environment.GetEnvironmentVariable("MONGODB_URI");
+    options.DatabaseName = Environment.GetEnvironmentVariable("MONGODB_DATABASE");
+    options.CollectionName = builder.Configuration["MongoSettings:CollectionName"];
+});
 
 builder.Services.AddSingleton<MeddiMongoContext>(sp =>
 {
@@ -27,7 +33,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowNuxt", policy =>
     {
-        policy.WithOrigins("http://localhost:3000")
+        policy.WithOrigins(frontendUrl)
               .AllowAnyMethod()
               .AllowAnyHeader();
     });

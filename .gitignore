@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/Prueba-tecnica-Meddi-back/appsettings.json
+*.env
